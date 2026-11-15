@@ -100,10 +100,10 @@ func (lst *List[T]) Append(vals ...T) {
 	}
 }
 
-// Remove deletes and returns the element at i. It panics if i is outside [0, Len()).
-func (lst *List[T]) Remove(i int) T {
+// RemoveAt deletes and returns the element at i. It panics if i is outside [0, Len()).
+func (lst *List[T]) RemoveAt(i int) T {
 	if !lst.withinRange(i) {
-		panic(fmt.Sprintf("linkedlist.List.Remove: index %d out of range for length %d", i, lst.length))
+		panic(fmt.Sprintf("linkedlist.List.RemoveAt: index %d out of range for length %d", i, lst.length))
 	}
 	p := lst.head
 	if lst.length-i > i+1 {
@@ -295,7 +295,7 @@ func (lst *List[T]) PopFront() (T, bool) {
 	if lst.IsEmpty() {
 		return *new(T), false
 	}
-	return lst.Remove(0), true
+	return lst.RemoveAt(0), true
 }
 
 // PopBack removes and returns the tail element, or the zero value and false if empty.
@@ -303,7 +303,7 @@ func (lst *List[T]) PopBack() (T, bool) {
 	if lst.IsEmpty() {
 		return *new(T), false
 	}
-	return lst.Remove(lst.length - 1), true
+	return lst.RemoveAt(lst.length - 1), true
 }
 
 // Enqueue inserts val at the tail of the list.

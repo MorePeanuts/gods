@@ -48,10 +48,10 @@ func (lst *List[T]) Append(vals ...T) {
 	lst.elements = append(lst.elements, vals...)
 }
 
-// Remove deletes and returns the element at i. It panics if i is outside [0, Len()).
-func (lst *List[T]) Remove(i int) T {
+// RemoveAt deletes and returns the element at i. It panics if i is outside [0, Len()).
+func (lst *List[T]) RemoveAt(i int) T {
 	if !lst.withinRange(i) {
-		panic(fmt.Sprintf("arraylist.List.Remove: index %d out of range for length %d", i, len(lst.elements)))
+		panic(fmt.Sprintf("arraylist.List.RemoveAt: index %d out of range for length %d", i, len(lst.elements)))
 	}
 	element := lst.elements[i]
 	lst.elements = slices.Delete(lst.elements, i, i+1)

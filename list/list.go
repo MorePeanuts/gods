@@ -15,8 +15,8 @@ type Interface[T any] interface {
 	Set(i int, val T)
 	// Append adds vals to the end in argument order.
 	Append(vals ...T)
-	// Remove deletes and returns the element at i.
-	Remove(i int) T
+	// RemoveAt deletes and returns the element at i. It panics if i is outside [0, Len()).
+	RemoveAt(i int) T
 	// IndexFunc calls match in element order and returns the index of the
 	// first element for which match returns true, or -1 if none match.
 	IndexFunc(match func(T) bool) int
