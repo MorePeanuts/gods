@@ -17,8 +17,6 @@ type Set[T comparable] struct {
 	keys map[T]struct{}
 }
 
-var itemExists = struct{}{}
-
 // New returns a set containing keys.
 func New[T comparable](keys ...T) *Set[T] {
 	set := &Set[T]{make(map[T]struct{})}
@@ -32,7 +30,7 @@ func (st *Set[T]) Add(keys ...T) {
 		st.keys = make(map[T]struct{})
 	}
 	for _, k := range keys {
-		st.keys[k] = itemExists
+		st.keys[k] = struct{}{}
 	}
 }
 

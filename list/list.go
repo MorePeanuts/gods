@@ -42,6 +42,16 @@ func Contains[T comparable](lst Interface[T], val T) bool {
 	return IndexOf(lst, val) >= 0
 }
 
+// Remove deletes the first element equal to val and reports whether it was found.
+func Remove[T comparable](lst Interface[T], val T) bool {
+	i := IndexOf(lst, val)
+	if i < 0 {
+		return false
+	}
+	lst.RemoveAt(i)
+	return true
+}
+
 // ContainsAll reports whether lst contains each of vals at least once.
 // Duplicate queries do not require duplicate elements. An empty query returns true.
 func ContainsAll[T comparable](lst Interface[T], vals ...T) bool {
