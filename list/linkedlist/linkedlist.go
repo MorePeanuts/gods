@@ -6,10 +6,18 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/MorePeanuts/gods/deque"
 	"github.com/MorePeanuts/gods/list"
+	"github.com/MorePeanuts/gods/queue"
+	"github.com/MorePeanuts/gods/stack"
 )
 
-var _ list.List[int] = (*List[int])(nil)
+var (
+	_ list.Interface[int]  = (*List[int])(nil)
+	_ deque.Interface[int] = (*List[int])(nil)
+	_ queue.Interface[int] = (*List[int])(nil)
+	_ stack.Interface[int] = (*List[int])(nil)
+)
 
 // List is a mutable, zero-indexed list backed by doubly linked nodes.
 // Its zero value is an empty list ready to use.
@@ -254,6 +262,74 @@ func (lst *List[T]) String() string {
 // Prepend adds vals to the front of the list in argument order.
 func (lst *List[T]) Prepend(vals ...T) {
 	lst.Insert(0, vals...)
+}
+
+// PushFront inserts val at the head of the list.
+func (lst *List[T]) PushFront(val T) {
+	lst.Prepend(val)
+}
+
+// PushBack inserts val at the tail of the list.
+func (lst *List[T]) PushBack(val T) {
+	lst.Append(val)
+}
+
+// Front returns the head element, or the zero value and false if empty.
+func (lst *List[T]) Front() (T, bool) {
+	if lst.IsEmpty() {
+		return *new(T), false
+	}
+	return lst.head.next.val, true
+}
+
+// Back returns the tail element, or the zero value and false if empty.
+func (lst *List[T]) Back() (T, bool) {
+	if lst.IsEmpty() {
+		return *new(T), false
+	}
+	return lst.head.prev.val, true
+}
+
+// PopFront removes and returns the head element, or the zero value and false if empty.
+func (lst *List[T]) PopFront() (T, bool) {
+	if lst.IsEmpty() {
+		return *new(T), false
+	}
+	return lst.Remove(0), true
+}
+
+// PopBack removes and returns the tail element, or the zero value and false if empty.
+func (lst *List[T]) PopBack() (T, bool) {
+	if lst.IsEmpty() {
+		return *new(T), false
+	}
+	return lst.Remove(lst.length - 1), true
+}
+
+// Enqueue inserts val at the tail of the list.
+func (lst *List[T]) Enqueue(val T) {
+	lst.PushBack(val)
+}
+
+// Dequeue removes and returns the head element, or the zero value and false if empty.
+func (lst *List[T]) Dequeue() (T, bool) {
+	return lst.PopFront()
+}
+
+// Push places val at the top of the stack, which is the head of the list.
+func (lst *List[T]) Push(val T) {
+	lst.PushFront(val)
+}
+
+// Pop removes and returns the stack top, or the zero value and false if empty.
+func (lst *List[T]) Pop() (T, bool) {
+	return lst.PopFront()
+}
+
+// Peek returns the head element, which is both the queue front and stack top.
+// It returns the zero value and false if empty.
+func (lst *List[T]) Peek() (T, bool) {
+	return lst.Front()
 }
 
 func (lst *List[T]) withinRange(i int) bool {

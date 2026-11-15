@@ -9,7 +9,7 @@ import (
 	"github.com/MorePeanuts/gods/list"
 )
 
-var _ list.List[int] = (*List[int])(nil)
+var _ list.Interface[int] = (*List[int])(nil)
 
 // List is a mutable, zero-indexed list backed by a resizable slice.
 // Its zero value is an empty list ready to use.

@@ -7,8 +7,8 @@ import (
 	"github.com/MorePeanuts/gods/container"
 )
 
-// List is a mutable, ordered collection with zero-based indexing.
-type List[T any] interface {
+// Interface defines the operations of a mutable, ordered list with zero-based indexing.
+type Interface[T any] interface {
 	// Get returns the element at i.
 	Get(i int) T
 	// Set replaces the element at i with val.
@@ -33,18 +33,18 @@ type List[T any] interface {
 }
 
 // IndexOf returns the index of the first element equal to val, or -1 if absent.
-func IndexOf[T comparable](lst List[T], val T) int {
+func IndexOf[T comparable](lst Interface[T], val T) int {
 	return lst.IndexFunc(func(element T) bool { return element == val })
 }
 
 // Contains reports whether lst contains an element equal to val.
-func Contains[T comparable](lst List[T], val T) bool {
+func Contains[T comparable](lst Interface[T], val T) bool {
 	return IndexOf(lst, val) >= 0
 }
 
 // ContainsAll reports whether lst contains each of vals at least once.
 // Duplicate queries do not require duplicate elements. An empty query returns true.
-func ContainsAll[T comparable](lst List[T], vals ...T) bool {
+func ContainsAll[T comparable](lst Interface[T], vals ...T) bool {
 	if len(vals) == 0 {
 		return true
 	}
@@ -63,11 +63,11 @@ func ContainsAll[T comparable](lst List[T], vals ...T) bool {
 }
 
 // Sort sorts lst in ascending order.
-func Sort[T cmp.Ordered](lst List[T]) {
+func Sort[T cmp.Ordered](lst Interface[T]) {
 	lst.SortBy(cmp.Compare[T])
 }
 
 // SortStable sorts lst in ascending order, preserving the original order of equal elements.
-func SortStable[T cmp.Ordered](lst List[T]) {
+func SortStable[T cmp.Ordered](lst Interface[T]) {
 	lst.SortStableBy(cmp.Compare[T])
 }
