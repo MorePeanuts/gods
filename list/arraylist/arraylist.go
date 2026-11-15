@@ -1,7 +1,7 @@
+// Package arraylist provides a generic list backed by a resizable slice.
 package arraylist
 
 import (
-	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -11,11 +11,15 @@ import (
 
 var _ list.List[int] = (*List[int])(nil)
 
-type List[T comparable] struct {
+// List is a mutable, zero-indexed list backed by a resizable slice.
+// Its zero value is an empty list ready to use.
+// A List must not be copied after first use. Use Clone to copy its elements.
+type List[T any] struct {
 	elements []T
 }
 
-func New[T comparable](vals ...T) *List[T] {
+// New returns a list initialized with vals in argument order.
+func New[T any](vals ...T) *List[T] {
 	lst := &List[T]{}
 	if len(vals) > 0 {
 		lst.Append(vals...)
@@ -23,6 +27,7 @@ func New[T comparable](vals ...T) *List[T] {
 	return lst
 }
 
+// Get returns the element at i. It panics if i is outside [0, Len()).
 func (lst *List[T]) Get(i int) T {
 	if !lst.withinRange(i) {
 		panic(fmt.Sprintf("arraylist.List.Get: index %d out of range for length %d", i, len(lst.elements)))
@@ -30,6 +35,7 @@ func (lst *List[T]) Get(i int) T {
 	return lst.elements[i]
 }
 
+// Set replaces the element at i. It panics if i is outside [0, Len()).
 func (lst *List[T]) Set(i int, val T) {
 	if !lst.withinRange(i) {
 		panic(fmt.Sprintf("arraylist.List.Set: index %d out of range for length %d", i, len(lst.elements)))
@@ -37,10 +43,12 @@ func (lst *List[T]) Set(i int, val T) {
 	lst.elements[i] = val
 }
 
+// Append adds vals to the end of the list in argument order.
 func (lst *List[T]) Append(vals ...T) {
 	lst.elements = append(lst.elements, vals...)
 }
 
+// Remove deletes and returns the element at i. It panics if i is outside [0, Len()).
 func (lst *List[T]) Remove(i int) T {
 	if !lst.withinRange(i) {
 		panic(fmt.Sprintf("arraylist.List.Remove: index %d out of range for length %d", i, len(lst.elements)))
@@ -50,23 +58,7 @@ func (lst *List[T]) Remove(i int) T {
 	return element
 }
 
-func (lst *List[T]) Contains(val T) bool {
-	return slices.Contains(lst.elements, val)
-}
-
-func (lst *List[T]) ContainsAll(vals ...T) bool {
-	set := make(map[T]bool)
-	for _, val := range vals {
-		set[val] = true
-	}
-	for _, element := range lst.elements {
-		if set[element] {
-			delete(set, element)
-		}
-	}
-	return len(lst.elements) == 0
-}
-
+// SortBy sorts the list according to compare, which must define a strict weak ordering.
 func (lst *List[T]) SortBy(compare func(a, b T) int) {
 	if len(lst.elements) < 2 {
 		return
@@ -74,6 +66,7 @@ func (lst *List[T]) SortBy(compare func(a, b T) int) {
 	slices.SortFunc(lst.elements, compare)
 }
 
+// SortStableBy sorts like SortBy and preserves the original order of equal elements.
 func (lst *List[T]) SortStableBy(compare func(a, b T) int) {
 	if len(lst.elements) < 2 {
 		return
@@ -81,14 +74,7 @@ func (lst *List[T]) SortStableBy(compare func(a, b T) int) {
 	slices.SortStableFunc(lst.elements, compare)
 }
 
-func Sort[T cmp.Ordered](lst *List[T]) {
-	slices.Sort(lst.elements)
-}
-
-func SortStable[T cmp.Ordered](lst *List[T]) {
-	slices.SortStableFunc(lst.elements, cmp.Compare[T])
-}
-
+// Swap exchanges the elements at i and j. It panics if either index is outside [0, Len()).
 func (lst *List[T]) Swap(i, j int) {
 	if !lst.withinRange(i) {
 		panic(fmt.Sprintf("arraylist.List.Swap: index %d out of range for length %d", i, len(lst.elements)))
@@ -99,6 +85,8 @@ func (lst *List[T]) Swap(i, j int) {
 	lst.elements[i], lst.elements[j] = lst.elements[j], lst.elements[i]
 }
 
+// Insert inserts vals in argument order before i, appending if i equals Len().
+// It panics if i is outside [0, Len()].
 func (lst *List[T]) Insert(i int, vals ...T) {
 	if !lst.withinRange(i) && i != len(lst.elements) {
 		panic(fmt.Sprintf("arraylist.List.Insert: index %d out of range [0, %d]", i, len(lst.elements)))
@@ -106,23 +94,35 @@ func (lst *List[T]) Insert(i int, vals ...T) {
 	lst.elements = slices.Insert(lst.elements, i, vals...)
 }
 
-func (lst *List[T]) IndexOf(val T) int {
-	return slices.Index(lst.elements, val)
+// IndexFunc returns the index of the first element for which match returns
+// true, or -1 if none match.
+func (lst *List[T]) IndexFunc(match func(T) bool) int {
+	return slices.IndexFunc(lst.elements, match)
 }
 
+// Clone returns a shallow copy of lst with independent storage.
+// Elements are copied by assignment.
+func (lst *List[T]) Clone() *List[T] {
+	return &List[T]{elements: slices.Clone(lst.elements)}
+}
+
+// IsEmpty reports whether the list has no elements.
 func (lst *List[T]) IsEmpty() bool {
 	return len(lst.elements) == 0
 }
 
+// Len returns the number of elements.
 func (lst *List[T]) Len() int {
 	return len(lst.elements)
 }
 
+// Clear removes all elements and retains the list capacity.
 func (lst *List[T]) Clear() {
 	clear(lst.elements)
 	lst.elements = lst.elements[:0]
 }
 
+// String returns a string representation of the list in element order.
 func (lst *List[T]) String() string {
 	vals := make([]string, 0, len(lst.elements))
 	for _, val := range lst.elements {
@@ -131,10 +131,12 @@ func (lst *List[T]) String() string {
 	return "arraylist.List{" + strings.Join(vals, ", ") + "}"
 }
 
+// ShrinkToFit reduces the capacity to the current length.
 func (lst *List[T]) ShrinkToFit() {
 	lst.ShrinkTo(len(lst.elements))
 }
 
+// ShrinkTo reduces the capacity to the greater of n and the current length when that value is below the current capacity.
 func (lst *List[T]) ShrinkTo(n int) {
 	target := max(len(lst.elements), n)
 	if target < cap(lst.elements) {
