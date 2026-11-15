@@ -1,4 +1,5 @@
-// Package queue provides a FIFO queue backed by a growable ring buffer.
+// Package queue defines a common queue interface and provides a FIFO queue
+// backed by a growable ring buffer.
 package queue
 
 import (
@@ -8,11 +9,16 @@ import (
 	"github.com/MorePeanuts/gods/deque"
 )
 
-// Interface defines the operations of a FIFO queue.
-// Operations that return an element use the zero value and false when empty.
+// Interface defines the common operations of a queue.
+// Each implementation specifies its removal order.
 type Interface[T any] interface {
+	// Enqueue adds val to the queue.
 	Enqueue(val T)
+	// Dequeue removes and returns the next element in the queue's removal
+	// order, or the zero value and false if the queue is empty.
 	Dequeue() (T, bool)
+	// Peek returns the element that Dequeue would remove without removing it,
+	// or the zero value and false if the queue is empty.
 	Peek() (T, bool)
 
 	container.Container[T]

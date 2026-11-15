@@ -1,14 +1,14 @@
-package treemap
+package rbtree
 
 // red is the color of the link from the parent. Missing links are black.
-type node[K comparable, V any] struct {
+type node[K any, V any] struct {
 	key         K
 	value       V
 	left, right *node[K, V]
 	red         bool
 }
 
-func isRed[K comparable, V any](n *node[K, V]) bool {
+func isRed[K any, V any](n *node[K, V]) bool {
 	return n != nil && n.red
 }
 
@@ -48,16 +48,16 @@ func (n *node[K, V]) balance() *node[K, V] {
 	return n
 }
 
-func (mp *Map[K, V]) insert(n *node[K, V], key K, val V) (root *node[K, V], old V, replaced bool) {
+func (tr *Tree[K, V]) insert(n *node[K, V], key K, val V) (root *node[K, V], old V, replaced bool) {
 	if n == nil {
 		return &node[K, V]{key: key, value: val, red: true}, old, false
 	}
 
-	switch order := mp.compare(key, n.key); {
+	switch order := tr.compare(key, n.key); {
 	case order < 0:
-		n.left, old, replaced = mp.insert(n.left, key, val)
+		n.left, old, replaced = tr.insert(n.left, key, val)
 	case order > 0:
-		n.right, old, replaced = mp.insert(n.right, key, val)
+		n.right, old, replaced = tr.insert(n.right, key, val)
 	default:
 		old = n.value
 		n.value = val
@@ -89,26 +89,26 @@ func (n *node[K, V]) moveRedRight() *node[K, V] {
 
 // remove descends only into subtrees known to contain key. It moves a red link
 // down as needed so the final removal does not reduce the black height.
-func (mp *Map[K, V]) remove(n *node[K, V], key K) *node[K, V] {
-	if mp.compare(key, n.key) < 0 {
+func (tr *Tree[K, V]) remove(n *node[K, V], key K) *node[K, V] {
+	if tr.compare(key, n.key) < 0 {
 		if !isRed(n.left) && !isRed(n.left.left) {
 			n = n.moveRedLeft()
 		}
-		n.left = mp.remove(n.left, key)
+		n.left = tr.remove(n.left, key)
 		return n.balance()
 	}
 
 	if isRed(n.left) {
 		n = n.rotateRight()
 	}
-	if mp.compare(key, n.key) == 0 && n.right == nil {
+	if tr.compare(key, n.key) == 0 && n.right == nil {
 		return nil
 	}
 	if !isRed(n.right) && !isRed(n.right.left) {
 		n = n.moveRedRight()
 	}
 
-	if mp.compare(key, n.key) == 0 {
+	if tr.compare(key, n.key) == 0 {
 		successor := n.right
 		for successor.left != nil {
 			successor = successor.left
@@ -116,7 +116,7 @@ func (mp *Map[K, V]) remove(n *node[K, V], key K) *node[K, V] {
 		n.key, n.value = successor.key, successor.value
 		n.right = n.right.removeMin()
 	} else {
-		n.right = mp.remove(n.right, key)
+		n.right = tr.remove(n.right, key)
 	}
 	return n.balance()
 }
@@ -132,13 +132,11 @@ func (n *node[K, V]) removeMin() *node[K, V] {
 	return n.balance()
 }
 
-func (n *node[K, V]) visit(f func(K, V)) {
+func (n *node[K, V]) ascend(yield func(K, V) bool) bool {
 	if n == nil {
-		return
+		return true
 	}
-	n.left.visit(f)
-	f(n.key, n.value)
-	n.right.visit(f)
+	return n.left.ascend(yield) && yield(n.key, n.value) && n.right.ascend(yield)
 }
 
 func (n *node[K, V]) clone() *node[K, V] {

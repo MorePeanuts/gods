@@ -10,13 +10,18 @@ import (
 )
 
 // Interface defines the operations of a double-ended queue.
-// Operations that return an element use the zero value and false when empty.
 type Interface[T any] interface {
+	// PushFront inserts val at the front of the deque.
 	PushFront(val T)
+	// PushBack inserts val at the back of the deque.
 	PushBack(val T)
+	// PopFront removes and returns the front element, or the zero value and false if empty.
 	PopFront() (T, bool)
+	// PopBack removes and returns the back element, or the zero value and false if empty.
 	PopBack() (T, bool)
+	// Front returns the front element without removing it, or the zero value and false if empty.
 	Front() (T, bool)
+	// Back returns the back element without removing it, or the zero value and false if empty.
 	Back() (T, bool)
 
 	container.Container[T]
