@@ -40,3 +40,20 @@ type SearchTree[K any, V any] interface {
 
 	container.Container[V]
 }
+
+// Heap stores elements in priority order.
+// Each implementation defines which element has the highest priority.
+type Heap[T any] interface {
+	// Push adds val to the heap.
+	Push(val T)
+
+	// Peek returns the highest-priority element without removing it,
+	// or the zero value and false if the heap is empty.
+	Peek() (T, bool)
+
+	// Pop removes and returns the highest-priority element,
+	// or the zero value and false if the heap is empty.
+	Pop() (T, bool)
+
+	container.Container[T]
+}
