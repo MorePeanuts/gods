@@ -104,6 +104,120 @@ func (mp *Map[K, V]) Keys() []K {
 	return keys
 }
 
+// First returns the first entry in comparator order, or zero values and false
+// if the map is empty.
+func (mp *Map[K, V]) First() (K, V, bool) {
+	n := mp.root
+	for n != nil && n.left != nil {
+		n = n.left
+	}
+	return n.keyValue()
+}
+
+// Last returns the last entry in comparator order, or zero values and false
+// if the map is empty.
+func (mp *Map[K, V]) Last() (K, V, bool) {
+	n := mp.root
+	for n != nil && n.right != nil {
+		n = n.right
+	}
+	return n.keyValue()
+}
+
+// Floor returns the last entry whose key is at or before key in comparator
+// order, or zero values and false if no such entry exists.
+func (mp *Map[K, V]) Floor(key K) (K, V, bool) {
+	return mp.predecessor(key, true).keyValue()
+}
+
+// Ceiling returns the first entry whose key is at or after key in comparator
+// order, or zero values and false if no such entry exists.
+func (mp *Map[K, V]) Ceiling(key K) (K, V, bool) {
+	return mp.successor(key, true).keyValue()
+}
+
+// Lower returns the last entry whose key is strictly before key in comparator
+// order, or zero values and false if no such entry exists.
+func (mp *Map[K, V]) Lower(key K) (K, V, bool) {
+	return mp.predecessor(key, false).keyValue()
+}
+
+// Higher returns the first entry whose key is strictly after key in comparator
+// order, or zero values and false if no such entry exists.
+func (mp *Map[K, V]) Higher(key K) (K, V, bool) {
+	return mp.successor(key, false).keyValue()
+}
+
+func (mp *Map[K, V]) predecessor(key K, inclusive bool) *node[K, V] {
+	var best *node[K, V]
+	for n := mp.root; n != nil; {
+		order := mp.compare(key, n.key)
+		if order == 0 && inclusive {
+			return n
+		}
+		if order > 0 {
+			best = n
+			n = n.right
+		} else {
+			n = n.left
+		}
+	}
+	return best
+}
+
+func (mp *Map[K, V]) successor(key K, inclusive bool) *node[K, V] {
+	var best *node[K, V]
+	for n := mp.root; n != nil; {
+		order := mp.compare(key, n.key)
+		if order == 0 && inclusive {
+			return n
+		}
+		if order < 0 {
+			best = n
+			n = n.left
+		} else {
+			n = n.right
+		}
+	}
+	return best
+}
+
+func (n *node[K, V]) keyValue() (K, V, bool) {
+	if n == nil {
+		return *new(K), *new(V), false
+	}
+	return n.key, n.value, true
+}
+
+// KeysInRange returns an independent slice of keys in the half-open interval
+// [from, to), in comparator order. The result is empty if from compares
+// equal to or after to. The traversal takes O(log n + k) time for k results.
+func (mp *Map[K, V]) KeysInRange(from, to K) []K {
+	keys := make([]K, 0)
+	if mp.root == nil || mp.compare(from, to) >= 0 {
+		return keys
+	}
+
+	var visit func(*node[K, V])
+	visit = func(n *node[K, V]) {
+		if n == nil {
+			return
+		}
+		lower, upper := mp.compare(n.key, from), mp.compare(n.key, to)
+		if lower > 0 {
+			visit(n.left)
+		}
+		if lower >= 0 && upper < 0 {
+			keys = append(keys, n.key)
+		}
+		if upper < 0 {
+			visit(n.right)
+		}
+	}
+	visit(mp.root)
+	return keys
+}
+
 // IsEmpty reports whether the map has no entries.
 func (mp *Map[K, V]) IsEmpty() bool {
 	return mp.length == 0

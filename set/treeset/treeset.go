@@ -85,3 +85,52 @@ func (st *Set[T]) String() string {
 func (st *Set[T]) Clone() *Set[T] {
 	return &Set[T]{keys: *st.keys.Clone()}
 }
+
+// First returns the first element in comparator order, or the zero value and
+// false if the set is empty.
+func (st *Set[T]) First() (T, bool) {
+	key, _, found := st.keys.First()
+	return key, found
+}
+
+// Last returns the last element in comparator order, or the zero value and
+// false if the set is empty.
+func (st *Set[T]) Last() (T, bool) {
+	key, _, found := st.keys.Last()
+	return key, found
+}
+
+// Floor returns the last element at or before key in comparator order, or the
+// zero value and false if no such element exists.
+func (st *Set[T]) Floor(key T) (T, bool) {
+	key, _, found := st.keys.Floor(key)
+	return key, found
+}
+
+// Ceiling returns the first element at or after key in comparator order, or
+// the zero value and false if no such element exists.
+func (st *Set[T]) Ceiling(key T) (T, bool) {
+	key, _, found := st.keys.Ceiling(key)
+	return key, found
+}
+
+// Lower returns the last element strictly before key in comparator order, or
+// the zero value and false if no such element exists.
+func (st *Set[T]) Lower(key T) (T, bool) {
+	key, _, found := st.keys.Lower(key)
+	return key, found
+}
+
+// Higher returns the first element strictly after key in comparator order, or
+// the zero value and false if no such element exists.
+func (st *Set[T]) Higher(key T) (T, bool) {
+	key, _, found := st.keys.Higher(key)
+	return key, found
+}
+
+// ElementsInRange returns an independent slice of elements in the half-open
+// interval [from, to), in comparator order. The result is empty if from
+// compares equal to or after to.
+func (st *Set[T]) ElementsInRange(from, to T) []T {
+	return st.keys.KeysInRange(from, to)
+}
